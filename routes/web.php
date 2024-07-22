@@ -8,6 +8,10 @@ use Inertia\Inertia;
 
 Route::get('/flights', [FlightController::class, 'index']);
 
+Route::get('/flight-info', function () {
+    return Inertia::render('Flight');
+});
+
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),

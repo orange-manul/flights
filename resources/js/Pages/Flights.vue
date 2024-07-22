@@ -1,5 +1,4 @@
 <template>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <div class="container mt-5">
         <h1 class="text-center mb-4">Flight Information</h1>
         <table class="table table-hover table-bordered">
@@ -12,7 +11,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr v-for="flight in flights" :key="flight.flight_number">
+            <tr v-for="flight in flights" :key="flight.flight.iata">
                 <td>{{ flight.airline.name }}</td>
                 <td>{{ flight.flight.iata }}</td>
                 <td>{{ flight.departure.airport }}</td>
@@ -24,10 +23,12 @@
 </template>
 
 <script>
+import { usePage } from '@inertiajs/inertia-vue3';
+
 export default {
     data() {
         return {
-            flights: [],
+            flights: []
         };
     },
     mounted() {
@@ -36,9 +37,9 @@ export default {
     methods: {
         async fetchFlights() {
             try {
-                const response = await fetch('/flights');
+                const response = await fetch('/flights'); // Путь должен соответствовать вашему маршруту в Laravel
                 const data = await response.json();
-                this.flights = data.data;
+                this.flights = data.data; // Проверьте, что вы правильно обращаетесь к данным
             } catch (error) {
                 console.error("Error fetching flights:", error);
             }
@@ -46,3 +47,7 @@ export default {
     }
 };
 </script>
+
+<style>
+/* Добавьте свои стили здесь */
+</style>
