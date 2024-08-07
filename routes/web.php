@@ -6,7 +6,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/flights', [FlightController::class, 'index']);
+Route::get('/flights', [FlightController::class, 'index'])->name('flights.index');
 
 Route::get('/flight-info', function () {
     return Inertia::render('Flight');

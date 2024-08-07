@@ -2,6 +2,7 @@
 
 namespace App\Service\Api;
 
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 
 class FlightService
@@ -15,19 +16,31 @@ class FlightService
 
     public function fetchFlights()
     {
-        $response = Http::get("http://api.aviationstack.com/v1/flights", [
-            'access_key' => $this->apiKey
-        ]);
+        try {
 
-        $flights = $response->json();
+            $response = Http::retry(3, 100)->timeout(60)->get("http://api.aviationstack.com/v1/flights", [
+                'access_key' => $this->apiKey,
+            ]);
 
-        return array_map(function ($flight){
-            return [
-                'airline_name' => $flight['airline']['name'],
-                'flight_iata' => $flight['flight']['iata'],
-                'departure_airport' => $flight['departure']['airport'],
-                'arrival_airport' => $flight['arrival']['airport']
-            ];
-        }, $flights['data']);
+            $flights = $response->json();
+
+            return array_map(function ($flight) {
+                // Проверяем, что flight_iata существует и не пустое
+                if (isset($flight['flight']['iata']) && !empty($flight['flight']['iata'])) {
+                    return [
+                        'airline_name' => $flight['airline']['name'] ?? 'Unknown',
+                        'flight_iata' => $flight['flight']['iata'],
+                        'departure_airport' => $flight['departure']['airport'] ?? 'Unknown',
+                        'arrival_airport' => $flight['arrival']['airport'] ?? 'Unknown',
+                    ];
+                }
+                return null;
+            }, $flights['data']);
+        }catch (RequestException $e){
+            return response()->json([
+                'error' => 'Не удалось получить данные от API. Попробуйте позже.',
+                'message' => $e->getMessage()
+            ], 500);
+    }
     }
 }
